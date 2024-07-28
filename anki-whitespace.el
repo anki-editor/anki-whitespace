@@ -36,6 +36,7 @@
 ;;; Code:
 
 (require 'anki-editor)
+(require 'dash)
 
 (defgroup anki-whitespace nil
   "Customizations for anki-whitespace."
@@ -67,7 +68,7 @@ to Anki.'"
   :type '(alist :key-type string :value-type function)
   :group 'anki-whitespace)
 
-(defun anki-whitespace-export-cloze (beg end)
+(defun anki-whitespace-export-cloze (_beg end)
   "Export the Cloze note from BEG to END."
   `(("Text" . ,(buffer-substring-no-properties (point) end))))
 
@@ -137,9 +138,6 @@ meant as `:around' advice for."
               (tags (cl-set-difference (anki-editor--get-tags)
                                        anki-editor-ignored-org-tags
                                        :test #'string=))
-              (heading (or (get "title" info)
-                           (int-to-string (cl-random (1- (expt 2 32))))))
-              (level (org-current-level))
               (exported-fields
                (--map (cons (car it) (anki-editor--export-string (cdr it) format))
                       fields)))
@@ -159,7 +157,7 @@ meant as `:around' advice for."
       (goto-char beg)
       (search-forward-regexp (regexp-quote field) (pos-eol))
       (goto-char (match-beginning 0))
-      (if (looking-back ",\s")
+      (if (looking-back ",\s" (pos-bol))
           (progn (goto-char (match-beginning 0))
                  (push-mark)
                  (forward-char))
@@ -181,7 +179,7 @@ meant as `:around' advice for."
              (format (concat "Do you really want to delete note %s " "from Anki?")
                      note-id))
         (anki-editor-api-call-result 'deleteNotes :notes (list note-id))
-        (anki-whitespace-delete-field "id")
+        (anki-whitespace--delete-field "id")
         (message "Deleted note %s from Anki" note-id)))))
 
 (defun anki-whitespace--push-note-at-point (old-fun)
@@ -205,9 +203,9 @@ push the note at point."
         (goto-char begin)
         (while (and (> end (point))
                     (search-forward anki-whitespace-prefix end t))
-          (anki-whitespace-push-note-at-point)))
+          (anki-editor-push-note-at-point)))
     ;; No active region, so default to note at point.
-    (anki-whitespace-push-note-at-point)))
+    (anki-editor-push-note-at-point)))
 
 (defun anki-whitespace-push-notes-in-buffer ()
   "Push all notes in the current buffer."
