@@ -76,10 +76,11 @@ to Anki.'"
   "Export the Basic note from BEG to END."
   (save-excursion
     (goto-char beg)
-    (when-let (q-start (search-forward "Q: " end t))
-      (when-let (a-start (search-forward "A: " end t))
-        `(("Front" . ,(buffer-substring-no-properties q-start (- a-start 4)))
-          ("Back"  . ,(buffer-substring-no-properties a-start end)))))))
+    (let ((case-fold-search nil))
+      (when-let (q-start (search-forward-regexp "Q:\\( \\|\n\\)" end t))
+        (when-let (a-start (search-forward-regexp "A:\\( \\|\n\\)" end t))
+          `(("Front" . ,(buffer-substring-no-properties q-start (- a-start 4)))
+            ("Back"  . ,(buffer-substring-no-properties a-start end))))))))
 
 (defun anki-whitespace--get-whitespace-note ()
   "Get the beginning and end of the note at point.
