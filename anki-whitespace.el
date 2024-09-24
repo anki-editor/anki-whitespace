@@ -168,20 +168,22 @@ meant as `:around' advice for."
         (search-forward-regexp "$" (pos-eol) t)
         (delete-region (mark) (point))))))
 
-(defun anki-whitespace-delete-note-at-point ()
+(defun anki-whitespace-delete-note-at-point (old-fun)
   "Delete the note at point from Anki."
   (interactive)
-  (save-excursion
-    (let* ((note (anki-editor-note-at-point))
-           (note-id (string-to-number (anki-editor-note-id note))))
-      (when (not note-id)
-        (user-error "Note at point is not in Anki (no note-id)"))
-      (when (yes-or-no-p
-             (format (concat "Do you really want to delete note %s " "from Anki?")
-                     note-id))
-        (anki-editor-api-call-result 'deleteNotes :notes (list note-id))
-        (anki-whitespace--delete-field "id")
-        (message "Deleted note %s from Anki" note-id)))))
+  (if (not anki-whitespace-mode)
+      (funcall old-fun)
+    (save-excursion
+      (let* ((note (anki-editor-note-at-point))
+             (note-id (string-to-number (anki-editor-note-id note))))
+        (when (not note-id)
+          (user-error "Note at point is not in Anki (no note-id)"))
+        (when (yes-or-no-p
+               (format (concat "Do you really want to delete note %s " "from Anki?")
+                       note-id))
+          (anki-editor-api-call-result 'deleteNotes :notes (list note-id))
+          (anki-whitespace--delete-field "id")
+          (message "Deleted note %s from Anki" note-id))))))
 
 (defun anki-whitespace--push-note-at-point (old-fun)
   "Push note at point to Anki.
@@ -246,10 +248,10 @@ as `:around' advice for."
   (if anki-whitespace-mode
       (progn
         (anki-editor-setup-minor-mode)
-        (advice-add 'anki-editor-note-at-point        :around   #'anki-whitespace-note-at-point)
-        (advice-add 'anki-editor-push-note-at-point   :around   #'anki-whitespace--push-note-at-point)
-        (advice-add 'anki-editor--set-note-id         :around   #'anki-whitespace--set-note-id)
-        (advice-add 'anki-editor-delete-note-at-point :override #'anki-whitespace-delete-note-at-point))
+        (advice-add 'anki-editor-note-at-point        :around #'anki-whitespace-note-at-point)
+        (advice-add 'anki-editor-push-note-at-point   :around #'anki-whitespace--push-note-at-point)
+        (advice-add 'anki-editor--set-note-id         :around #'anki-whitespace--set-note-id)
+        (advice-add 'anki-editor-delete-note-at-point :around #'anki-whitespace-delete-note-at-point))
     (anki-editor-teardown-minor-mode)
     (advice-remove 'anki-editor-note-at-point        #'anki-whitespace-note-at-point)
     (advice-remove 'anki-editor-push-note-at-point   #'anki-whitespace--push-note-at-point)
