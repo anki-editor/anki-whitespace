@@ -192,8 +192,9 @@ meant as `:around' advice for."
   (interactive)
   (if (not anki-whitespace-mode)
       (funcall old-fun)
-    (anki-editor--push-note (anki-editor-note-at-point))
-    (message "Successfully pushed note at point to Anki.")))
+    (save-excursion
+      (anki-editor--push-note (anki-editor-note-at-point))
+      (message "Successfully pushed note at point to Anki."))))
 
 (defun anki-whitespace-push-notes-dwim (&optional begin end)
   "Push notes to Anki.
