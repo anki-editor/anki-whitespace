@@ -60,7 +60,8 @@ You can add new options to `anki-whitespace-options`,
 and adjust `anki-whitespace-note-at-point` as needed.
 
 Any further syntax is determined by the note type.
-The only steadfast rule is that everything has to be one paragraph.
+The only steadfast rule is that everything has to be one paragraph;
+optionally, a note can end sooner than that by ending with `anki-whitespace-suffir` (default: `<<<`).
 The two builtin types, `Basic` and `Cloze`, specify the following rules:
 
   - The `Basic` type looks for two things:

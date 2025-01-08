@@ -50,6 +50,14 @@ not commonly found in other text."
   :type 'string
   :group 'anki-whitespace)
 
+(defcustom anki-whitespace-suffix "<<<"
+  "Suffix of a note.
+This is the suffix that `anki-whitespace' looks for when pushing notes
+in the current region or buffer.  It should be \"unique enough\"—i.e.,
+not commonly found in other text. TODO"
+  :type 'string
+  :group 'anki-whitespace)
+
 (defcustom anki-whitespace-options '("deck" "type" "id" "title")
   "Options for notes.
 These are the options that may appear after `anki-whitespace-prefix' in
@@ -92,8 +100,15 @@ Return a cons-cell of (BEG . END)."
            (beg (progn (search-backward anki-whitespace-prefix)
                        (forward-char (length anki-whitespace-prefix))
                        (point)))
-           (end (if (re-search-forward sep (point-max) t)
-                    (progn (backward-char 2)
+           (end (if (re-search-forward
+                     (concat "\\("
+                             (regexp-quote sep)
+                             "\\|"
+                             (regexp-quote anki-whitespace-suffix)
+                             "\\)")
+                     (point-max)
+                     t)
+                    (progn (backward-char (length (match-string-no-properties 1)))
                            (point))
                   ;; If we can't find a separator, just assume the note runs
                   ;; until the end of the buffer.
