@@ -89,8 +89,8 @@ Return a cons-cell of (BEG . END)."
     (let* ((sep "
 
 ")
-           (beg (progn (re-search-backward sep)
-                       (forward-char 2) ; Length sep
+           (beg (progn (search-backward anki-whitespace-prefix)
+                       (forward-char (length anki-whitespace-prefix))
                        (point)))
            (end (if (re-search-forward sep (point-max) t)
                     (progn (backward-char 2)
