@@ -115,7 +115,7 @@ Return a cons-cell of (BEG . END)."
                   (point-max))))
       (cons beg end))))
 
-(defun anki-whitespace--get-information (beg)
+(defun anki-whitespace--get-information (beg end)
   "Return note information.
 BEG marks the beginning of the note (see `anki-whitespace-prefix').
 Gather all of the `anki-whitespace-options' we can find and returns an
@@ -125,7 +125,7 @@ alist with this information."
         (sep "\\(\s\\|,\\|\n\\)"))
     (save-match-data
       (let (res)
-        (while (search-forward-regexp opts (pos-eol) t)
+        (while (search-forward-regexp opts end t)
           (let* ((match (match-string-no-properties 1))
                  (pt (point))
                  (val (when (search-forward-regexp sep (1+ (pos-eol)) t)
@@ -134,7 +134,6 @@ alist with this information."
                          (- (point)
                             (length (match-string-no-properties 1)))))))
             (push (cons match val) res)))
-        (beginning-of-line 1)
         res))))
 
 (defun anki-whitespace-note-at-point (old-fun)
@@ -145,7 +144,7 @@ meant as `:around' advice for."
       (funcall old-fun)
     (cl-flet ((get (key alist) (alist-get key alist nil nil #'string=)))
       (-let* (((beg . end) (anki-whitespace--get-whitespace-note))
-              (info (anki-whitespace--get-information beg))
+              (info (anki-whitespace--get-information beg end))
               (note-type (get "type" info))
               (fields (funcall (get note-type anki-whitespace-export-alist) (point) end))
               (deck (get "deck" info))
