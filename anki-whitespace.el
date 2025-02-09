@@ -54,7 +54,7 @@ not commonly found in other text."
   "Suffix of a note.
 This is the suffix that `anki-whitespace' looks for when pushing notes
 in the current region or buffer.  It should be \"unique enough\"—i.e.,
-not commonly found in other text. TODO"
+not commonly found in other text."
   :type 'string
   :group 'anki-whitespace)
 
@@ -254,6 +254,7 @@ as `:around' advice for."
   (insert "type: " type)
   (newline))
 
+;;;###autoload
 (define-minor-mode anki-whitespace-mode
   "A minor mode for making Anki cards with Org."
   :lighter " anki-whitespace"
