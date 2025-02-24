@@ -148,14 +148,10 @@ meant as `:around' advice for."
               (note-type (get "type" info))
               (fields (funcall (get note-type anki-whitespace-export-alist) (point) end))
               (deck (get "deck" info))
-              (format (anki-editor-entry-format))
               (note-id (get "id" info))
               (tags (cl-set-difference (anki-editor--get-tags)
                                        anki-editor-ignored-org-tags
-                                       :test #'string=))
-              (exported-fields
-               (--map (cons (car it) (anki-editor--export-string (cdr it) format))
-                      fields)))
+                                       :test #'string=)))
         (unless deck (user-error "Missing deck"))
         (unless note-type (user-error "Missing note type"))
         (make-anki-editor-note
@@ -163,7 +159,8 @@ meant as `:around' advice for."
          :model note-type
          :deck deck
          :tags tags
-         :fields exported-fields)))))
+         :fields fields
+         :marker (point-marker))))))
 
 (defun anki-whitespace--delete-field (field)
   "Delete FIELD of the note at point."
