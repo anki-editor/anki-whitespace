@@ -65,6 +65,16 @@ a OPTION: VALUE fashion.  Will be sent to Anki as appropriate."
   :type '(repeat string)
   :group 'anki-whitespace)
 
+(defcustom anki-whitespace-create-alist
+  `(("Basic" . ,(##insert "Q:
+A: ")))
+  "Additional information for creating a note.
+This is a list of (NAME . FUN) pairs, where NAME corresponds to an Anki
+note type, and FUN is a function that creates additional text (e.g.,
+\"Q:\" and \"A:\" for the \"Basic\" note type) when a note is inserted."
+  :type '(alist :key-type string :value-type function)
+  :group 'anki-whitespace)
+
 (defcustom anki-whitespace-export-alist
   '(("Cloze" . anki-whitespace-export-cloze)
     ("Basic" . anki-whitespace-export-basic))
@@ -240,7 +250,6 @@ as `:around' advice for."
       (end-of-line)
       (insert ", id: " (number-to-string id)))))
 
-;; TODO: things should perhaps have their own syntax?
 (defun anki-whitespace-new-note (type deck)
   "Create a new note of TYPE in DECK."
   (interactive
@@ -249,7 +258,9 @@ as `:around' advice for."
   (insert anki-whitespace-prefix)
   (insert "deck: " deck ", ")
   (insert "type: " type)
-  (newline))
+  (newline)
+  (if-let* ((more (alist-get type anki-whitespace-create-alist nil nil #'string=)))
+      (funcall more)))
 
 ;;;###autoload
 (define-minor-mode anki-whitespace-mode
