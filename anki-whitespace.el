@@ -1,11 +1,11 @@
 ;;; anki-whitespace.el --- A more lightweight syntax for anki-editor -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024  Tony Zorman
+;; Copyright (C) 2024–2025  Tony Zorman
 ;;
 ;; Author: Tony Zorman <soliditsallgood@mailbox.org>
 ;; Keywords: convenience
 ;; Version: 0.1
-;; Package-Requires: ((emacs "29.1") (anki-editor "0.3.3") (dash "2.19.1"))
+;; Package-Requires: ((emacs "29.1") (anki-editor "0.3.3") (dash "2.19.1") (llama "0.6.2"))
 ;; Homepage: https://github.com/anki-editor/anki-whitespace
 
 ;; This file is NOT part of GNU Emacs.
@@ -270,6 +270,33 @@ as `:around' advice for."
     (advice-remove 'anki-editor-push-note-at-point   #'anki-whitespace--push-note-at-point)
     (advice-remove 'anki-editor--set-note-id         #'anki-whitespace--set-note-id)
     (advice-remove 'anki-editor-delete-note-at-point #'anki-whitespace-delete-note-at-point)))
+
+;;;; `anki-whitespace-clean'
+
+(defun anki-whitespace-hide-all-in-buffer ()
+  (interactive)
+  (cl-flet ((hide (re len)
+              (goto-char (point-max))
+              (while (re-search-backward re nil t)
+                (overlay-put (make-overlay (1- (point)) (funcall len))
+                             'invisible
+                             'anki-whitespace))))
+    (save-mark-and-excursion
+      (hide (regexp-quote anki-whitespace-prefix) #'pos-eol)
+      (hide (regexp-quote anki-whitespace-suffix) (##+ (point) (length anki-whitespace-suffix)))
+      (hide "{{c[0-9]::"                          (##+ (point) (length "{{c1::")))
+      (hide (regexp-quote "}}")                   (##+ (point) (length "}}"))))))
+
+(define-minor-mode anki-whitespace-clean-mode
+  "Hide `anki-whitespace' indicators in current buffer."
+  :lighter " anki-whitespace-clean"
+  (unless (and (equal major-mode 'org-mode)
+               (bound-and-true-p anki-whitespace-mode))
+    (user-error "anki-whitespace-clean-mode only works in anki-whitespace buffers"))
+  (if anki-whitespace-clean-mode
+      (progn (add-to-invisibility-spec 'anki-whitespace)
+             (anki-whitespace-hide-all-in-buffer))
+    (remove-from-invisibility-spec 'anki-whitespace)))
 
 (provide 'anki-whitespace)
 ;;; anki-whitespace.el ends here
