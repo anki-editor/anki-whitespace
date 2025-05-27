@@ -66,7 +66,7 @@ a OPTION: VALUE fashion.  Will be sent to Anki as appropriate."
   :group 'anki-whitespace)
 
 (defcustom anki-whitespace-create-alist
-  `(("Basic" . ,(##insert "Q:
+  `(("Basic" . (lambda () insert "Q:
 A: ")))
   "Additional information for creating a note.
 This is a list of (NAME . FUN) pairs, where NAME corresponds to an Anki
