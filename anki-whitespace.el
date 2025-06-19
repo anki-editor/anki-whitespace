@@ -37,6 +37,7 @@
 
 (require 'anki-editor)
 (require 'dash)
+(require 'llama)
 
 (defgroup anki-whitespace nil
   "Customizations for anki-whitespace."
