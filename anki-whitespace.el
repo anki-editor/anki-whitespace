@@ -290,7 +290,9 @@ as `:around' advice for."
   (cl-flet ((hide (re len)
               (goto-char (point-max))
               (while (re-search-backward re nil t)
-                (overlay-put (make-overlay (1- (point)) (funcall len))
+                (overlay-put (make-overlay (- (point)
+                                              (if (looking-back "\n" (1- (point))) 1 0))
+                                           (funcall len))
                              'invisible
                              'anki-whitespace))))
     (save-mark-and-excursion
